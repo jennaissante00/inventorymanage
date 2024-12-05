@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventory Management</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div style="background-color: white; border: 3px solid rgb(32, 5, 237); width: 70%; margin-inline: auto; padding-inline: 50px; padding-block: 25px;">
+        <h1 style="text-align: center;">Form Input Master dan Stock Data Barang</h1>
+        
+        <!-- Form input produk -->
+        <label for="">Kode Produk</label>
+        <input id="input-kode-produk" type="text" readonly>
+        <br><br>
+
+        <label for="">Nama Produk</label>
+        <input id="input-nama-produk" type="text">
+        <br><br>
+
+        <label for="">Harga Produk</label>
+        <input id="input-harga-produk" type="number">
+        <br><br>
+
+        <label for="">Satuan</label>
+        <select id="satuan-produk">
+            <option value="gelas">Gelas</option>
+            <option value="botol">Botol</option>
+            <option value="pack">Pack</option>
+        </select>
+        <br><br>
+
+        <label for="">Kategori</label>
+        <select id="kategori-produk">
+            <option value="minuman">Minuman</option>
+            <option value="makanan">Makanan</option>
+            <option value="kopi">Kopi</option>
+        </select>
+        <br><br>
+
+        <label for="">URL Gambar</label>
+        <input id="url-gambar" type="text">
+        <br><br>
+
+        <label for="">Stock Awal</label>
+        <input id="stock-awal" type="number">
+        <br><br>
+
+        <button id="simpan-button" style="width: 100%; height: 50px;" onclick="simpanproduk()">Simpan</button>
+    </div>
+
+    <!-- Tabel Produk -->
+    <table>
+        <thead>
+            <tr>
+                <th>NO</th>
+                <th>Kode Produk</th>
+                <th>Nama Produk</th>
+                <th>Harga</th>
+                <th>Satuan</th>
+                <th>Kategori</th>
+                <th>Foto Produk</th>
+                <th>Stok Produk</th>
+                <th>Aksi</th>
+            </tr>
+        </thead>
+        <tbody id="t-body">
+            <!-- Data akan dimasukkan di sini -->
+        </tbody>
+    </table>
+
+<script>
+var simpanButton = document.getElementById("simpan-button");
+var inputkodeproduk = document.getElementById("input-kode-produk");
+var inputnamaproduk = document.getElementById("input-nama-produk");
+var inputharga = document.getElementById("input-harga-produk");
+var satuanproduk = document.getElementById("satuan-produk");
+var kategoriproduk = document.getElementById("kategori-produk");
+var urlgambar = document.getElementById("url-gambar");
+var stockawal = document.getElementById("stock-awal");
+
+var produkarray = [];
+var kodeIncrement = 1;
+var modeEDIT = false;
+var indexproduk = null;
+
+function simpanproduk() {
+    const kodeproduk = inputkodeproduk.value;
+    const namaproduk = inputnamaproduk.value;
+    const hargaproduk = inputharga.value;
+    const satuanprodukValue = satuanproduk.value;
+    const kategoriprodukValue = kategoriproduk.value;
+    const urlgambarValue = urlgambar.value;
+    const stockawalValue = stockawal.value;
+
+    // Konfirmasi sebelum menyimpan
+    if (confirm("Apakah Anda yakin ingin menyimpan produk ini?")) {
+        if (modeEDIT) {
+            // Update produk yang sedang diedit
+            produkarray[indexproduk] = {
+                kodeproduk: kodeproduk,
+                namaproduk: namaproduk,
+                hargaproduk: hargaproduk,
+                satuanproduk: satuanprodukValue,
+                kategoriproduk: kategoriprodukValue,
+                urlgambar: urlgambarValue,
+                stockawal: stockawalValue
+            };
+            modeEDIT = false;
+            indexproduk = null;
+        } else {
+            // Menambah produk baru
+            produkarray.push({
+                kodeproduk: kodeproduk,
+                namaproduk: namaproduk,
+                hargaproduk: hargaproduk,
+                satuanproduk: satuanprodukValue,
+                kategoriproduk: kategoriprodukValue,
+                urlgambar: urlgambarValue,
+                stockawal: stockawalValue
+            });
+            kodeIncrement++;
+        }
+
+        menampilkanTable();
+
+        // Reset form
+        document.getElementById("input-kode-produk").value = `PRD${String(kodeIncrement).padStart(3, '0')}`;
+        document.getElementById("input-nama-produk").value = '';
+        document.getElementById("input-harga-produk").value = '';
+        document.getElementById("satuan-produk").value = 'gelas';
+        document.getElementById("kategori-produk").value = 'minuman';
+        document.getElementById("url-gambar").value = '';
+        document.getElementById("stock-awal").value = '';
+    }
+}
+
+function menampilkanTable() {
+    var tBody = document.getElementById('t-body');
+    tBody.innerHTML = '';
+
+    produkarray.forEach((produk, index) => {
+        var baris = tBody.insertRow();
+        var warna = produk.stockawal < 5 ? 'red' : 'white';
+
+        baris.innerHTML = `
+            <td>${index + 1}</td>
+            <td>${produk.kodeproduk}</td>
+            <td>${produk.namaproduk}</td>
+            <td>${produk.hargaproduk}</td>
+            <td>${produk.satuanproduk}</td>
+            <td>${produk.kategoriproduk}</td>
+            <td><img src="${produk.urlgambar}" alt="${produk.namaproduk}" height="50px" width="50px"></td>
+            <td style="background: ${warna}">${produk.stockawal}</td>
+            <td><button onclick="edit(${index})">Edit</button> <button onclick="deleteproduk(${index})">Delete</button></td>
+        `;
+    });
+}
+
+function edit(index) {
+    var produkedit = produkarray[index];
+    document.getElementById("input-kode-produk").value = produkedit.kodeproduk;
+    document.getElementById("input-nama-produk").value = produkedit.namaproduk;
+    document.getElementById("input-harga-produk").value = produkedit.hargaproduk;
+    document.getElementById("satuan-produk").value = produkedit.satuanproduk;
+    document.getElementById("kategori-produk").value = produkedit.kategoriproduk;
+    document.getElementById("url-gambar").value = produkedit.urlgambar;
+    document.getElementById("stock-awal").value = produkedit.stockawal;
+
+    modeEDIT = true;
+    indexproduk = index;
+}
+
+function deleteproduk(index) {
+    if (confirm("Apakah Anda yakin ingin menghapus produk ini?")) {
+        produkarray.splice(index, 1);
+        menampilkanTable();
+    }
+}
+</script>
+</body>
+</html>
